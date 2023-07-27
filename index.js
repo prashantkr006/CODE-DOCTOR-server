@@ -2,6 +2,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const cors = require("cors"); // Import cors
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -11,8 +12,7 @@ app.use(bodyParser.json());
 app.use(cors()); // Use cors middleware
 
 // Connect to MongoDB
-const mongoURI =
-  "mongodb+srv://root:9LkxD4pJ5nFqTeNB@cluster0.1d0ukcn.mongodb.net/test?retryWrites=true&w=majority";
+const mongoURI = process.env.MONGO_URI;
 mongoose
   .connect(mongoURI, {
     useNewUrlParser: true,
@@ -35,6 +35,18 @@ const userSchema = new mongoose.Schema({
 });
 
 const UserModel = mongoose.model("User", userSchema);
+
+app.get("/api/users", async (req, res) => {
+  try {
+    const users = await UserModel.find(); // Fetch all user records from the database
+    return res.status(200).json(users); // Send the user records as JSON response
+  } catch (err) {
+    console.error("Error fetching user data:", err);
+    return res
+      .status(500)
+      .json({ error: "Server error, please try again later." });
+  }
+});
 
 // API Endpoint to handle POST request for waitlist
 app.post("/api/waitlist", async (req, res) => {
